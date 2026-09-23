@@ -864,6 +864,566 @@
                 border: 1px solid #ccc;
             }
         }
+
+        /* ============================================
+           MONTY HALL GAME SECTION
+           ============================================ */
+        #game {
+            overflow: hidden;
+        }
+
+        .game-intro-text {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.7;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            text-align: center;
+        }
+
+        .game-stage {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem 2rem 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Mute toggle */
+        .mute-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 16px;
+            z-index: 10;
+            transition: all 0.2s ease;
+        }
+        .mute-btn:hover {
+            border-color: var(--accent-yellow);
+            color: var(--accent-yellow);
+            transform: scale(1.1);
+        }
+
+        /* Host dialog box */
+        .host-dialog {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            min-height: 80px;
+        }
+
+        .host-avatar {
+            font-size: 2.2rem;
+            flex-shrink: 0;
+            animation: host-bob 2.5s ease-in-out infinite;
+        }
+
+        @keyframes host-bob {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .host-bubble {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 0 12px 12px 12px;
+            padding: 0.85rem 1.1rem;
+            font-size: 0.92rem;
+            color: var(--text-primary);
+            line-height: 1.65;
+            position: relative;
+            flex: 1;
+        }
+
+        .host-bubble::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 12px;
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid var(--border-color);
+        }
+
+        .host-bubble strong {
+            color: var(--accent-pink);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        /* Doors arena */
+        .doors-arena {
+            display: flex;
+            justify-content: center;
+            gap: clamp(1rem, 3vw, 2.5rem);
+            margin: 1.5rem 0;
+            perspective: 900px;
+        }
+
+        .door-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .door-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .door {
+            width: clamp(85px, 15vw, 130px);
+            height: clamp(145px, 25vw, 220px);
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+            user-select: none;
+        }
+
+        .door:hover:not(.door-selected):not(.door-disabled):not(.door-opened) {
+            transform: rotateY(-8deg) translateY(-4px) scale(1.03);
+        }
+
+        .door-face, .door-back {
+            position: absolute;
+            inset: 0;
+            border-radius: 6px 6px 2px 2px;
+            backface-visibility: hidden;
+        }
+
+        .door-face {
+            background: linear-gradient(160deg, #2a3244 0%, #1a2130 60%, #111827 100%);
+            border: 2px solid #3a4a5e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            box-shadow: inset -4px 0 12px rgba(0,0,0,0.4), inset 4px 0 8px rgba(255,255,255,0.04);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        [data-theme="light"] .door-face {
+            background: linear-gradient(160deg, #c8d6e8 0%, #a8bccc 60%, #8fa8bc 100%);
+            border-color: #7c9db5;
+        }
+
+        .door-face .door-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(1.6rem, 3vw, 2.4rem);
+            font-weight: 700;
+            color: #5a7a99;
+            transition: color 0.3s ease;
+        }
+
+        [data-theme="light"] .door-face .door-number {
+            color: #4a6b85;
+        }
+
+        /* Door handle */
+        .door-face::after {
+            content: '';
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 40%, #f0d090, #b8860b);
+            box-shadow: 0 0 6px rgba(200,160,50,0.5);
+        }
+
+        /* Door panel lines */
+        .door-panel-top, .door-panel-bottom {
+            position: absolute;
+            left: 14px;
+            right: 24px;
+            border-radius: 3px;
+            border: 1px solid rgba(90,120,155,0.3);
+        }
+
+        .door-panel-top {
+            top: 22px;
+            height: 35%;
+        }
+
+        .door-panel-bottom {
+            bottom: 18px;
+            height: 32%;
+        }
+
+        /* Selected door state */
+        .door.door-selected .door-face {
+            border-color: var(--accent-pink);
+            box-shadow: inset -4px 0 12px rgba(0,0,0,0.4), 0 0 20px rgba(236,72,153,0.5), inset 0 0 20px rgba(236,72,153,0.1);
+        }
+
+        .door.door-selected .door-number {
+            color: var(--accent-pink);
+        }
+
+        .door.door-selected + * .door-label,
+        .door-wrapper.selected .door-label {
+            color: var(--accent-pink);
+        }
+
+        /* Opened door - swings open via 3D rotation around left edge */
+        .door.door-opened {
+            transform-origin: left center;
+            animation: door-swing-open 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            cursor: default;
+        }
+
+        @keyframes door-swing-open {
+            0%   { transform: rotateY(0deg); }
+            100% { transform: rotateY(-85deg); }
+        }
+
+        /* Prize revealed behind door (shown when door opens) */
+        .door-prize {
+            position: absolute;
+            inset: 0;
+            border-radius: 6px 6px 2px 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            font-size: clamp(2rem, 4vw, 3.2rem);
+            z-index: -1;
+            transition: background 0.3s ease;
+        }
+
+        .door-prize.prize-car {
+            background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(34,211,238,0.1));
+            border: 2px solid var(--accent-green);
+        }
+
+        .door-prize.prize-lose {
+            background: linear-gradient(135deg, rgba(236,72,153,0.1), rgba(167,139,250,0.08));
+            border: 2px solid var(--border-color);
+        }
+
+        .door-prize .prize-label {
+            font-size: 0.62rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 0 8px;
+            line-height: 1.3;
+        }
+
+        .door.door-disabled {
+            cursor: default;
+            opacity: 0.7;
+            filter: grayscale(0.3);
+        }
+
+        /* Action buttons area */
+        .game-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .game-btn {
+            padding: 0.75rem 1.8rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            border: 2px solid;
+            cursor: pointer;
+            transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .game-btn:hover {
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+        }
+
+        .game-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .btn-stick {
+            background: var(--tag-bg-cyan);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .btn-switch {
+            background: var(--tag-bg-pink);
+            border-color: var(--accent-pink);
+            color: var(--accent-pink);
+        }
+
+        .btn-play-again {
+            background: var(--tag-bg-green);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            font-size: 1rem;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+            border-color: var(--accent-pink);
+            color: white;
+            font-size: 1.05rem;
+            padding: 0.85rem 2.2rem;
+            box-shadow: 0 4px 20px rgba(236,72,153,0.35);
+        }
+
+        /* Result banner */
+        .result-banner {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+            animation: pop-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes pop-in {
+            0% { transform: scale(0.6); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .result-banner.win {
+            background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(34,211,238,0.1));
+            border: 2px solid var(--accent-green);
+        }
+
+        .result-banner.lose {
+            background: linear-gradient(135deg, rgba(236,72,153,0.1), rgba(167,139,250,0.08));
+            border: 2px solid var(--border-color);
+        }
+
+        .result-banner .result-emoji {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-banner .result-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .result-banner .result-msg {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Drumroll animation text */
+        .drumroll-text {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-yellow);
+            font-family: 'JetBrains Mono', monospace;
+            animation: drumroll-pulse 0.3s ease-in-out infinite alternate;
+        }
+
+        @keyframes drumroll-pulse {
+            from { transform: scale(1); opacity: 0.8; }
+            to   { transform: scale(1.06); opacity: 1; }
+        }
+
+        /* Scoreboard */
+        .game-scoreboard {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.5rem 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .scoreboard-title {
+            font-size: 1rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--accent-yellow);
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 1.2rem;
+            letter-spacing: 0.06em;
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .score-card {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .score-card .score-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            display: block;
+        }
+
+        .score-card .score-lbl {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 0.2rem;
+            display: block;
+        }
+
+        .strategy-tracker {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.2rem;
+        }
+
+        .strategy-tracker h4 {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-pink);
+            margin-bottom: 0.8rem;
+        }
+
+        .strategy-row {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.6rem;
+            font-size: 0.85rem;
+        }
+
+        .strategy-row .strat-label {
+            min-width: 70px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+        }
+
+        .strat-bar-track {
+            flex: 1;
+            height: 10px;
+            background: var(--bg-dark);
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .strat-bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .strat-bar-fill.fill-switch { background: var(--accent-pink); }
+        .strat-bar-fill.fill-stick  { background: var(--accent-cyan); }
+
+        .strat-pct {
+            min-width: 40px;
+            text-align: right;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .host-assessment {
+            margin-top: 1rem;
+            padding: 0.85rem 1rem;
+            background: var(--bg-dark);
+            border-left: 3px solid var(--accent-yellow);
+            border-radius: 0 8px 8px 0;
+            font-size: 0.87rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        /* ============================================
+           CAR VICTORY ANIMATION (S-track)
+           ============================================ */
+        .car-track-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            pointer-events: none;
+            overflow: hidden;
+            display: none;
+        }
+
+        .car-track-overlay.active {
+            display: block;
+        }
+
+        .track-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ============================================
+           CONFETTI CANVAS OVERLAY
+           ============================================ */
+        #confettiCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            pointer-events: none;
+            display: none;
+        }
+
+        #confettiCanvas.active {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .doors-arena { gap: 0.7rem; }
+            .door { width: 82px; height: 135px; }
+            .game-stage { padding: 1.2rem 1rem 1.5rem; }
+            .game-scoreboard { padding: 1.2rem 1rem; }
+        }
     </style>
 </head>
 
@@ -883,6 +1443,7 @@
             <a href="#skills">Skills</a>
             <a href="#projects">Projects</a>
             <!-- <a href="#certifications">Certifications</a> -->
+            <a href="#game">🎮 Play Game</a>
             <a href="#contact">Contact</a>
         </div>
         <div class="social-icons">
@@ -1236,6 +1797,118 @@
             </div>
         </section>
         -->
+
+        <!-- ============================================
+             MONTY HALL GAME SECTION
+             ============================================ -->
+        <section id="game">
+            <h2>🎰 Game Time with Pragya</h2>
+            <p class="game-intro-text">
+                I built an interactive version of the <strong>Monty Hall Problem</strong> — a famous probability paradox
+                that has stumped mathematicians and baffled game show contestants for decades.
+                Pick a door, watch the host reveal a dud, then decide: <em>stick with your gut or switch for better odds?</em>
+                The math says something surprising. Play a few rounds to discover it!
+            </p>
+
+            <!-- Game Stage -->
+            <div class="game-stage" id="gameStage">
+                <button class="mute-btn" id="muteBtn" title="Toggle Sound" aria-label="Toggle Sound">🔊</button>
+
+                <!-- Host Dialog -->
+                <div class="host-dialog">
+                    <div class="host-avatar">🎙️</div>
+                    <div class="host-bubble" id="hostDialog">
+                        <strong>[HOST PRAGYA]</strong><br>
+                        Welcome to <em>Game Time</em>! Behind one of these 3 doors is a brand-new <strong>Supercar</strong> 🏎️.
+                        Behind the other two? A goat 🐐 or a placard 🪧 that says <em>"Better Luck Next Time"</em>.
+                        <br><br>
+                        Ready to play? Hit the button and let's get this show started! 🎬
+                    </div>
+                </div>
+
+                <!-- Doors -->
+                <div class="doors-arena" id="doorsArena">
+                    <div class="door-wrapper" id="wrapperA">
+                        <div class="door door-disabled" id="doorA" data-door="A" role="button" aria-label="Door A">
+                            <div class="door-prize" id="prizeA"></div>
+                            <div class="door-face">
+                                <div class="door-panel-top"></div>
+                                <span class="door-number">A</span>
+                                <div class="door-panel-bottom"></div>
+                            </div>
+                        </div>
+                        <span class="door-label">DOOR A</span>
+                    </div>
+                    <div class="door-wrapper" id="wrapperB">
+                        <div class="door door-disabled" id="doorB" data-door="B" role="button" aria-label="Door B">
+                            <div class="door-prize" id="prizeB"></div>
+                            <div class="door-face">
+                                <div class="door-panel-top"></div>
+                                <span class="door-number">B</span>
+                                <div class="door-panel-bottom"></div>
+                            </div>
+                        </div>
+                        <span class="door-label">DOOR B</span>
+                    </div>
+                    <div class="door-wrapper" id="wrapperC">
+                        <div class="door door-disabled" id="doorC" data-door="C" role="button" aria-label="Door C">
+                            <div class="door-prize" id="prizeC"></div>
+                            <div class="door-face">
+                                <div class="door-panel-top"></div>
+                                <span class="door-number">C</span>
+                                <div class="door-panel-bottom"></div>
+                            </div>
+                        </div>
+                        <span class="door-label">DOOR C</span>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="game-actions" id="gameActions">
+                    <button class="game-btn btn-start" id="startBtn">🎬 Start Game</button>
+                </div>
+
+                <!-- Result banner (shown after reveal) -->
+                <div id="resultBanner" style="display:none;"></div>
+            </div>
+
+            <!-- Scoreboard -->
+            <div class="game-scoreboard">
+                <div class="scoreboard-title">🏆 PRAGYA'S GAME SHOW SCOREBOARD 🏆</div>
+                <div class="score-grid">
+                    <div class="score-card">
+                        <span class="score-val" id="scorePlayed">0</span>
+                        <span class="score-lbl">Rounds Played</span>
+                    </div>
+                    <div class="score-card">
+                        <span class="score-val" id="scoreWins">0</span>
+                        <span class="score-lbl">Supercars Won 🏎️</span>
+                    </div>
+                    <div class="score-card">
+                        <span class="score-val" id="scoreRate">0%</span>
+                        <span class="score-lbl">Overall Win Rate</span>
+                    </div>
+                </div>
+                <div class="strategy-tracker">
+                    <h4>📊 Strategy Win Rate Tracker (proves the math!)</h4>
+                    <div class="strategy-row">
+                        <span class="strat-label">Switch 🔄</span>
+                        <div class="strat-bar-track">
+                            <div class="strat-bar-fill fill-switch" id="switchBar" style="width:0%"></div>
+                        </div>
+                        <span class="strat-pct" id="switchPct">-</span>
+                    </div>
+                    <div class="strategy-row">
+                        <span class="strat-label">Stick 🛡️</span>
+                        <div class="strat-bar-track">
+                            <div class="strat-bar-fill fill-stick" id="stickBar" style="width:0%"></div>
+                        </div>
+                        <span class="strat-pct" id="stickPct">-</span>
+                    </div>
+                    <div class="host-assessment" id="hostAssessment" style="display:none;"></div>
+                </div>
+            </div>
+        </section>
 
         <!-- Contact Section -->
         <section id="contact">
@@ -1649,6 +2322,605 @@
                 });
             });
         });
+
+        /* =======================================================
+           MONTY HALL GAME ENGINE
+           =======================================================
+           States:
+             0 = IDLE   (before start)
+             1 = PICK   (player picks a door)
+             2 = REVEAL (host reveals a losing door)
+             3 = DECIDE (stick or switch)
+             4 = RESULT (final reveal & result)
+        ======================================================= */
+        (function MontyHallGame() {
+
+            /* ---------- DOM refs ---------- */
+            const startBtn    = document.getElementById('startBtn');
+            const muteBtn     = document.getElementById('muteBtn');
+            const hostDialog  = document.getElementById('hostDialog');
+            const doorsArena  = document.getElementById('doorsArena');
+            const gameActions = document.getElementById('gameActions');
+            const resultBanner= document.getElementById('resultBanner');
+
+            const doors = {
+                A: { el: document.getElementById('doorA'), prize: document.getElementById('prizeA'), wrapper: document.getElementById('wrapperA') },
+                B: { el: document.getElementById('doorB'), prize: document.getElementById('prizeB'), wrapper: document.getElementById('wrapperB') },
+                C: { el: document.getElementById('doorC'), prize: document.getElementById('prizeC'), wrapper: document.getElementById('wrapperC') },
+            };
+
+            const scorePlayed    = document.getElementById('scorePlayed');
+            const scoreWins      = document.getElementById('scoreWins');
+            const scoreRate      = document.getElementById('scoreRate');
+            const switchBar      = document.getElementById('switchBar');
+            const stickBar       = document.getElementById('stickBar');
+            const switchPct      = document.getElementById('switchPct');
+            const stickPct       = document.getElementById('stickPct');
+            const hostAssessment = document.getElementById('hostAssessment');
+
+            /* ---------- State ---------- */
+            let state         = 0;
+            let carDoor       = null;
+            let pickedDoor    = null;
+            let revealedDoor  = null;
+            let isMuted       = false;
+            let drumrollTimer = null;
+
+            const score = {
+                played: 0, wins: 0,
+                switchPlayed: 0, switchWins: 0,
+                stickPlayed: 0,  stickWins: 0,
+            };
+
+            /* ---------- Audio (Web Audio API — no external files) ---------- */
+            let audioCtx = null;
+
+            function getAudioCtx() {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                return audioCtx;
+            }
+
+            function playTone(freq, type, dur, vol = 0.25, delay = 0) {
+                if (isMuted) return;
+                try {
+                    const ctx = getAudioCtx();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.frequency.value = freq;
+                    osc.type = type;
+                    gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+                    gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+                    osc.start(ctx.currentTime + delay);
+                    osc.stop(ctx.currentTime + delay + dur + 0.05);
+                } catch(e) { /* silent fail */ }
+            }
+
+            function soundClick()    { playTone(440, 'square', 0.12, 0.15); }
+            function soundPickDoor() { playTone(528, 'sine', 0.25, 0.3); playTone(660, 'sine', 0.18, 0.2, 0.2); }
+            function soundReveal()   { playTone(330, 'triangle', 0.4, 0.2); playTone(220, 'sine', 0.3, 0.15, 0.35); }
+            function soundDrumroll() {
+                if (isMuted) return;
+                let t = 0;
+                const beats = [0.12, 0.10, 0.08, 0.07, 0.06, 0.055, 0.05, 0.045, 0.04, 0.035, 0.03];
+                beats.forEach(d => { playTone(80 + Math.random()*40, 'sawtooth', d, 0.2 + t * 0.02, t); t += d * 0.9; });
+            }
+            function soundWin() {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => playTone(f, 'sine', 0.35, 0.35, i * 0.12));
+            }
+            function soundLose() {
+                [440, 392, 349, 294].forEach((f, i) => playTone(f, 'triangle', 0.3, 0.25, i * 0.1));
+            }
+            function soundCarRevUp() {
+                if (isMuted) return;
+                try {
+                    const ctx = getAudioCtx();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(80, ctx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(600, ctx.currentTime + 2.5);
+                    osc.frequency.linearRampToValueAtTime(200, ctx.currentTime + 3.0);
+                    gain.gain.setValueAtTime(0, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 3.2);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 3.3);
+                } catch(e) { /* silent fail */ }
+            }
+
+            /* ---------- Mute toggle ---------- */
+            muteBtn.addEventListener('click', () => {
+                isMuted = !isMuted;
+                muteBtn.textContent = isMuted ? '🔇' : '🔊';
+                soundClick();
+            });
+
+            /* ---------- Host dialog helper ---------- */
+            function setDialog(html) {
+                hostDialog.innerHTML = '<strong>[HOST PRAGYA]</strong><br>' + html;
+            }
+
+            /* ---------- Scoreboard update ---------- */
+            function updateScoreboard() {
+                scorePlayed.textContent = score.played;
+                scoreWins.textContent   = score.wins;
+                const rate = score.played ? Math.round((score.wins / score.played) * 100) : 0;
+                scoreRate.textContent   = rate + '%';
+
+                const swR = score.switchPlayed ? Math.round((score.switchWins / score.switchPlayed) * 100) : null;
+                const stR = score.stickPlayed  ? Math.round((score.stickWins  / score.stickPlayed)  * 100) : null;
+
+                switchPct.textContent = swR !== null ? swR + '%' : '-';
+                stickPct.textContent  = stR !== null ? stR + '%' : '-';
+                switchBar.style.width = swR !== null ? swR + '%' : '0%';
+                stickBar.style.width  = stR !== null ? stR + '%' : '0%';
+
+                // Host assessment
+                if (score.played >= 5) {
+                    hostAssessment.style.display = 'block';
+                    const swText = swR !== null ? `${swR}% win rate when switching` : 'haven\'t tried switching yet';
+                    const stText = stR !== null ? `${stR}% win rate when sticking` : 'haven\'t tried sticking yet';
+                    let msg = `"After ${score.played} rounds, your data shows: you have a <strong>${swText}</strong> and a <strong>${stText}</strong>.`;
+                    if (swR !== null && stR !== null) {
+                        if (swR > stR + 5) msg += ` The math checks out — <strong>switching ≈ 2/3 odds</strong>! 🎯"`;
+                        else if (swR < stR - 5) msg += ` Interesting result — but keep playing, the law of large numbers isn't done with you yet! 😄"`;
+                        else msg += ` Keep going — the difference should emerge over more rounds! 🎲"`;
+                    } else { msg += '"'; }
+                    hostAssessment.innerHTML = msg;
+                }
+            }
+
+            /* ---------- Door helpers ---------- */
+            function resetDoors() {
+                Object.values(doors).forEach(d => {
+                    d.el.className = 'door door-disabled';
+                    d.el.style.transformOrigin = '';
+                    d.prize.className = 'door-prize';
+                    d.prize.innerHTML = '';
+                    d.wrapper.classList.remove('selected');
+                });
+            }
+
+            function setPrize(doorKey, prizeType) {
+                const prizeEl = doors[doorKey].prize;
+                if (prizeType === 'car') {
+                    prizeEl.className = 'door-prize prize-car';
+                    prizeEl.innerHTML = '🏎️<span class="prize-label">SUPERCAR</span>';
+                } else if (prizeType === 'goat') {
+                    prizeEl.className = 'door-prize prize-lose';
+                    prizeEl.innerHTML = '🐐<span class="prize-label">GOAT</span>';
+                } else {
+                    prizeEl.className = 'door-prize prize-lose';
+                    prizeEl.innerHTML = '🪧<span class="prize-label">BETTER LUCK NEXT TIME</span>';
+                }
+            }
+
+            function openDoor(doorKey) {
+                const d = doors[doorKey].el;
+                d.style.transformOrigin = 'left center';
+                d.classList.add('door-opened', 'door-disabled');
+            }
+
+            function setButtons(html) {
+                gameActions.innerHTML = html;
+            }
+
+            /* ---------- GAME LOGIC ---------- */
+
+            // Stage 0 → 1: Start
+            function startGame() {
+                soundClick();
+                state = 1;
+                carDoor = ['A','B','C'][Math.floor(Math.random() * 3)];
+                pickedDoor = null;
+                revealedDoor = null;
+
+                resetDoors();
+                resultBanner.style.display = 'none';
+                resultBanner.innerHTML = '';
+
+                // Enable doors for picking
+                Object.keys(doors).forEach(key => {
+                    const el = doors[key].el;
+                    el.classList.remove('door-disabled');
+                    el.addEventListener('click', handleDoorPick);
+                });
+
+                setDialog('Alright! The car has been hidden behind one of the three doors 🙏. ' +
+                    '<strong>Click a door</strong> to make your first choice — trust your gut! 💡');
+                setButtons('');
+            }
+
+            // Stage 1 → 2: Player picks a door
+            function handleDoorPick(e) {
+                if (state !== 1) return;
+                state = 2;
+                const key = e.currentTarget.dataset.door;
+                pickedDoor = key;
+                soundPickDoor();
+
+                // Disable all doors
+                Object.keys(doors).forEach(k => {
+                    doors[k].el.removeEventListener('click', handleDoorPick);
+                    doors[k].el.classList.add('door-disabled');
+                });
+
+                // Highlight selected
+                doors[pickedDoor].el.classList.add('door-selected');
+                doors[pickedDoor].wrapper.classList.add('selected');
+
+                setDialog(`Interesting choice — <strong>Door ${pickedDoor}</strong>! Bold move. 🔥 ` +
+                    'Let me open one of the OTHER doors to reveal a dud... 👀');
+
+                // After brief pause, host reveals a losing door
+                setTimeout(() => revealLosingDoor(), 900);
+            }
+
+            // Stage 2 → 3: Host reveals a losing door
+            function revealLosingDoor() {
+                // Find a door that is NOT picked and NOT the car
+                const losers = ['A','B','C'].filter(k => k !== pickedDoor && k !== carDoor);
+                revealedDoor = losers[Math.floor(Math.random() * losers.length)];
+
+                setPrize(revealedDoor, revealedDoor === carDoor ? 'car' : (Math.random() > 0.5 ? 'goat' : 'placard'));
+                // Always a non-car behind revealed door
+                if (revealedDoor !== carDoor) {
+                    doors[revealedDoor].prize.innerHTML = Math.random() > 0.5 ?
+                        '🐐<span class="prize-label">GOAT</span>' :
+                        '🪧<span class="prize-label">BETTER LUCK NEXT TIME</span>';
+                    doors[revealedDoor].prize.className = 'door-prize prize-lose';
+                }
+
+                openDoor(revealedDoor);
+                soundReveal();
+
+                const switchDoor = ['A','B','C'].find(k => k !== pickedDoor && k !== revealedDoor);
+
+                setTimeout(() => {
+                    state = 3;
+                    setDialog(`Ha! As you can see, Door ${revealedDoor} is a dud! 😁 ` +
+                        `Now you're holding <strong>Door ${pickedDoor}</strong> and there's a mystery behind <strong>Door ${switchDoor}</strong>. ` +
+                        `Do you <strong>STICK</strong> with your original pick... or <strong>SWITCH</strong> to the other door? ` +
+                        `The probability might surprise you! 🤔`);
+
+                    setButtons(
+                        `<button class="game-btn btn-stick" id="btnStick">🛡️ Stick with Door ${pickedDoor}</button>` +
+                        `<button class="game-btn btn-switch" id="btnSwitch">🔄 Switch to Door ${switchDoor}</button>`
+                    );
+
+                    document.getElementById('btnStick').addEventListener('click', () => resolveGame('stick'));
+                    document.getElementById('btnSwitch').addEventListener('click', () => resolveGame('switch'));
+                }, 600);
+            }
+
+            /* Stage 3 → 4: Resolve */
+            function resolveGame(strategy) {
+                if (state !== 3) return;
+                state = 4;
+                soundClick();
+
+                const switchDoor = ['A','B','C'].find(k => k !== pickedDoor && k !== revealedDoor);
+                const finalDoor  = strategy === 'switch' ? switchDoor : pickedDoor;
+                const won        = finalDoor === carDoor;
+
+                setDialog(`🥁 <strong>Drum roll please...</strong> Let's see what's behind Door ${finalDoor}!`);
+                setButtons('<div class="drumroll-text">🥁 🥁 🥁 The moment of truth... 🥁 🥁 🥁</div>');
+                soundDrumroll();
+
+                // Reveal final door after delay
+                setTimeout(() => {
+                    // Reveal all prizes
+                    ['A','B','C'].forEach(k => {
+                        setPrize(k, k === carDoor ? 'car' : (k === revealedDoor ?
+                            (doors[k].prize.innerHTML.includes('🐐') ? 'goat' : 'placard') : 'goat'));
+                        if (k !== revealedDoor) openDoor(k);
+                    });
+
+                    // Highlight final door
+                    doors[finalDoor].el.classList.add('door-selected');
+
+                    score.played++;
+                    if (won) score.wins++;
+                    if (strategy === 'switch') { score.switchPlayed++; if (won) score.switchWins++; }
+                    else                       { score.stickPlayed++;  if (won) score.stickWins++;  }
+
+                    updateScoreboard();
+
+                    if (won) {
+                        soundWin();
+                        showWinResult(strategy);
+                        setTimeout(() => { soundCarRevUp(); launchCarAnimation(); }, 600);
+                        setTimeout(() => launchConfetti(), 700);
+                    } else {
+                        soundLose();
+                        showLoseResult(strategy, finalDoor, carDoor);
+                    }
+
+                    // Play again button
+                    setTimeout(() => {
+                        setButtons('<button class="game-btn btn-play-again" id="playAgainBtn">🔄 Play Again!</button>');
+                        document.getElementById('playAgainBtn').addEventListener('click', startGame);
+                    }, won ? 4500 : 1200);
+
+                }, 1800);
+            }
+
+            function showWinResult(strategy) {
+                resultBanner.style.display = 'block';
+                resultBanner.className = 'result-banner win';
+                resultBanner.innerHTML = `
+                    <span class="result-emoji">🏎️</span>
+                    <div class="result-title">YOU WON THE SUPERCAR! 🎉</div>
+                    <div class="result-msg">
+                        ${strategy === 'switch' ?
+                            'You <strong>switched</strong> — exactly what the math says you should! Switching gives you a ≈<strong>66.7%</strong> chance of winning. The math is on your side! 🏆' :
+                            'You <strong>stuck</strong> with your gut — and beat the ≈<strong>33.3%</strong> odds! Lucky you! 🍀 (Switching still has better long-term odds though!)'}
+                    </div>`;
+                setDialog(`🎉🎉 <strong>CONGRATULATIONS!</strong> You just drove home in a Supercar! ` +
+                    (strategy === 'switch' ? 'Switching is the smart play — the probability was ≈<strong>66.7%</strong> in your favour!' :
+                        'Even sticking can win! Though switching has better odds in the long run 😉'));
+            }
+
+            function showLoseResult(strategy, finalDoor, carDoor) {
+                resultBanner.style.display = 'block';
+                resultBanner.className = 'result-banner lose';
+                resultBanner.innerHTML = `
+                    <span class="result-emoji">${strategy === 'switch' ? '🐐' : '🐐'}</span>
+                    <div class="result-title">Oh no — not the car! 😢</div>
+                    <div class="result-msg">
+                        The Supercar was behind <strong>Door ${carDoor}</strong>.
+                        ${ strategy === 'switch' ?
+                            'You switched — which was still the statistically correct move! Switching wins ≈<strong>66.7%</strong> of the time. Sometimes luck just isn\'t on your side. 🍀' :
+                            'You stuck with your first choice — sticking only wins ≈<strong>33.3%</strong> of the time. Try switching next round! 🔄'}
+                    </div>`;
+                setDialog(`Oh no! The car was behind Door ${carDoor}! 😢 ` +
+                    (strategy === 'switch' ?
+                        'You switched, which IS the right strategy — it just didn\'t pay off this time. Switching still wins ≈<strong>66.7%</strong> of the time!' :
+                        'Next time, consider switching — it wins ≈<strong>66.7%</strong> of the time! The math doesn\'t lie! 💡'));
+            }
+
+            /* ---------- Start button ---------- */
+            startBtn.addEventListener('click', startGame);
+
+            /* =======================================================
+               CONFETTI SYSTEM
+            ======================================================= */
+            let confettiCanvas, confettiCtx, confettiParticles = [], confettiRaf;
+
+            function launchConfetti() {
+                if (!confettiCanvas) {
+                    confettiCanvas = document.createElement('canvas');
+                    confettiCanvas.id = 'confettiCanvas';
+                    confettiCanvas.style.cssText = 'position:fixed;inset:0;z-index:1000;pointer-events:none;';
+                    document.body.appendChild(confettiCanvas);
+                    confettiCtx = confettiCanvas.getContext('2d');
+                }
+                confettiCanvas.width  = window.innerWidth;
+                confettiCanvas.height = window.innerHeight;
+                confettiCanvas.style.display = 'block';
+
+                const colors = ['#f0c040','#ec4899','#22d3ee','#10b981','#a78bfa','#fb923c'];
+                confettiParticles = [];
+                for (let i = 0; i < 200; i++) {
+                    confettiParticles.push({
+                        x: Math.random() * confettiCanvas.width,
+                        y: -10 - Math.random() * confettiCanvas.height * 0.5,
+                        w: 6 + Math.random() * 8,
+                        h: 3 + Math.random() * 5,
+                        r: Math.random() * Math.PI * 2,
+                        dr: (Math.random() - 0.5) * 0.18,
+                        vy: 2.5 + Math.random() * 3.5,
+                        vx: (Math.random() - 0.5) * 1.8,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        opacity: 1,
+                    });
+                }
+
+                if (confettiRaf) cancelAnimationFrame(confettiRaf);
+                animateConfetti();
+
+                setTimeout(() => {
+                    if (confettiCanvas) confettiCanvas.style.display = 'none';
+                    if (confettiRaf) { cancelAnimationFrame(confettiRaf); confettiRaf = null; }
+                }, 5000);
+            }
+
+            function animateConfetti() {
+                if (!confettiCtx) return;
+                confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+                let alive = 0;
+                confettiParticles.forEach(p => {
+                    p.y  += p.vy;
+                    p.x  += p.vx + Math.sin(p.y * 0.03) * 0.8;
+                    p.r  += p.dr;
+                    p.opacity = Math.max(0, 1 - (p.y / confettiCanvas.height));
+
+                    if (p.y < confettiCanvas.height + 20) alive++;
+                    confettiCtx.save();
+                    confettiCtx.translate(p.x, p.y);
+                    confettiCtx.rotate(p.r);
+                    confettiCtx.globalAlpha = p.opacity;
+                    confettiCtx.fillStyle = p.color;
+                    confettiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                    confettiCtx.restore();
+                });
+
+                if (alive > 0) confettiRaf = requestAnimationFrame(animateConfetti);
+                else if (confettiCanvas) confettiCanvas.style.display = 'none';
+            }
+
+            /* =======================================================
+               CAR S-TRACK ANIMATION
+            ======================================================= */
+            let trackCanvas, trackCtx, trackRaf;
+
+            function launchCarAnimation() {
+                if (!trackCanvas) {
+                    trackCanvas = document.createElement('canvas');
+                    trackCanvas.style.cssText = 'position:fixed;inset:0;z-index:999;pointer-events:none;';
+                    document.body.appendChild(trackCanvas);
+                    trackCtx = trackCanvas.getContext('2d');
+                }
+                trackCanvas.width  = window.innerWidth;
+                trackCanvas.height = window.innerHeight;
+                trackCanvas.style.display = 'block';
+
+                const W = trackCanvas.width;
+                const H = trackCanvas.height;
+
+                // S-curve path points (normalized 0-1)
+                // We'll use a Bezier S-curve: start left-bottom, end right-top
+                const path = buildSPath(W, H);
+                let t = 0;
+                const totalDuration = 3000; // ms
+                let startTime = null;
+
+                // Dust particles
+                const dusts = [];
+                const carTrail = []; // trail of recent car positions for track drawing
+
+                function addDust(x, y, angle) {
+                    for (let i = 0; i < 4; i++) {
+                        dusts.push({
+                            x, y,
+                            vx: Math.cos(angle + Math.PI + (Math.random()-0.5)*1.2) * (0.8 + Math.random() * 1.5),
+                            vy: Math.sin(angle + Math.PI + (Math.random()-0.5)*1.2) * (0.8 + Math.random() * 1.5) - 0.5,
+                            life: 1,
+                            r: 6 + Math.random() * 12,
+                            color: `hsl(${30 + Math.random()*20},${40+Math.random()*20}%,${55+Math.random()*20}%)`,
+                        });
+                    }
+                }
+
+                function animate(ts) {
+                    if (!startTime) startTime = ts;
+                    const elapsed = ts - startTime;
+                    t = Math.min(elapsed / totalDuration, 1);
+
+                    trackCtx.clearRect(0, 0, W, H);
+
+                    // Draw S-track road
+                    trackCtx.save();
+                    trackCtx.strokeStyle = 'rgba(40,40,60,0.55)';
+                    trackCtx.lineWidth = 38;
+                    trackCtx.lineCap = 'round';
+                    trackCtx.lineJoin = 'round';
+                    trackCtx.beginPath();
+                    for (let i = 0; i <= 100; i++) {
+                        const pt = pathAt(path, i / 100);
+                        if (i === 0) trackCtx.moveTo(pt.x, pt.y);
+                        else trackCtx.lineTo(pt.x, pt.y);
+                    }
+                    trackCtx.stroke();
+
+                    // Road markings
+                    trackCtx.setLineDash([20, 18]);
+                    trackCtx.strokeStyle = 'rgba(255,220,50,0.25)';
+                    trackCtx.lineWidth = 2;
+                    trackCtx.stroke();
+                    trackCtx.setLineDash([]);
+                    trackCtx.restore();
+
+                    // Current car position
+                    const pos  = pathAt(path, t);
+                    const pos2 = pathAt(path, Math.min(t + 0.01, 1));
+                    const angle = Math.atan2(pos2.y - pos.y, pos2.x - pos.x);
+
+                    carTrail.push({ x: pos.x, y: pos.y });
+                    if (carTrail.length > 60) carTrail.shift();
+
+                    // Draw dust
+                    if (t < 0.98 && Math.random() < 0.7) addDust(pos.x, pos.y, angle);
+                    dusts.forEach(d => {
+                        d.x += d.vx; d.y += d.vy; d.life -= 0.025; d.r *= 1.04;
+                    });
+                    for (let i = dusts.length - 1; i >= 0; i--) {
+                        if (dusts[i].life <= 0) { dusts.splice(i, 1); continue; }
+                        const d = dusts[i];
+                        trackCtx.save();
+                        trackCtx.globalAlpha = d.life * 0.45;
+                        trackCtx.fillStyle = d.color;
+                        trackCtx.beginPath();
+                        trackCtx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+                        trackCtx.fill();
+                        trackCtx.restore();
+                    }
+
+                    // Draw car emoji
+                    const carSize = Math.min(W, H) * 0.055;
+                    trackCtx.save();
+                    trackCtx.translate(pos.x, pos.y);
+                    trackCtx.rotate(angle);
+                    trackCtx.font = `${carSize}px serif`;
+                    trackCtx.textAlign = 'center';
+                    trackCtx.textBaseline = 'middle';
+                    trackCtx.fillText('🏎️', 0, 0);
+                    trackCtx.restore();
+
+                    // Speed lines
+                    if (t < 0.95) {
+                        for (let s = 0; s < 3; s++) {
+                            const spread = (s - 1) * 12;
+                            const sx = pos.x + Math.cos(angle + Math.PI + (s===0?0.25:s===2?-0.25:0)) * 25 + spread;
+                            const sy = pos.y + Math.sin(angle + Math.PI + (s===0?0.25:s===2?-0.25:0)) * 25;
+                            const len = 30 + Math.random() * 25;
+                            trackCtx.save();
+                            trackCtx.strokeStyle = `rgba(255,220,80,${0.4 + Math.random()*0.3})`;
+                            trackCtx.lineWidth = 1.5;
+                            trackCtx.beginPath();
+                            trackCtx.moveTo(sx, sy);
+                            trackCtx.lineTo(sx + Math.cos(angle + Math.PI) * len, sy + Math.sin(angle + Math.PI) * len);
+                            trackCtx.stroke();
+                            trackCtx.restore();
+                        }
+                    }
+
+                    if (t < 1) {
+                        trackRaf = requestAnimationFrame(animate);
+                    } else {
+                        // Fade out
+                        setTimeout(() => {
+                            trackCanvas.style.transition = 'opacity 0.6s';
+                            trackCanvas.style.opacity = '0';
+                            setTimeout(() => {
+                                trackCanvas.style.display = 'none';
+                                trackCanvas.style.opacity = '1';
+                                trackCanvas.style.transition = '';
+                            }, 650);
+                        }, 300);
+                    }
+                }
+
+                trackRaf = requestAnimationFrame(animate);
+            }
+
+            function buildSPath(W, H) {
+                // Cubic bezier S-curve across screen
+                // Start: left-center-bottom, End: right-center-top
+                return {
+                    p0: { x: -0.05 * W,  y: H * 0.80 },
+                    p1: { x:  0.25 * W,  y: H * 0.20 },
+                    p2: { x:  0.75 * W,  y: H * 0.80 },
+                    p3: { x:  1.05 * W,  y: H * 0.20 },
+                };
+            }
+
+            function pathAt(p, t) {
+                // Cubic bezier formula
+                const mt = 1 - t;
+                return {
+                    x: mt*mt*mt*p.p0.x + 3*mt*mt*t*p.p1.x + 3*mt*t*t*p.p2.x + t*t*t*p.p3.x,
+                    y: mt*mt*mt*p.p0.y + 3*mt*mt*t*p.p1.y + 3*mt*t*t*p.p2.y + t*t*t*p.p3.y,
+                };
+            }
+
+        })(); /* end MontyHallGame IIFE */
     </script>
 </body>
 
